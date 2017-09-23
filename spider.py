@@ -1,5 +1,8 @@
-from functions import proceed_page, get_tree, get_link_details
+from functions import proceed_page, get_tree, get_link_details, put_in_db, connect
 from lxml.etree import fromstring
+from time import sleep
+
+conn = connect()
 
 url = "https://www.domofond.ru/arenda-kvartiry-sankt_peterburg-c3414?PriceTo=16000&RentalRate=Month&Rooms=One&Page={}"
 tree = get_tree(url.format(1))
@@ -32,6 +35,9 @@ for l in links:
     gathered_info.append(details)
 
     c += 1
+    # break
+    sleep(10)
 
 
-print(gathered_info)
+# print(gathered_info)
+put_in_db(gathered_info)

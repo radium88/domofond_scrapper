@@ -1,6 +1,13 @@
 from lxml import html, etree
 import requests
+from time import sleep
+import sqlite3
 
+s = requests.session()
+
+def connect():
+    conn = sqlite3.connect("database.db")
+    return conn
 
 def proceed_page(page_tree):
     links = []
@@ -17,16 +24,28 @@ def proceed_page(page_tree):
 
 
 def get_tree(url):
-    r = requests.get(url)
+    global s
+    r = s.get(url, headers={
+        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.91 Safari/537.36'
+    })
     page_content = r.text
+
+    if r.status_code != 200:
+        print(url, r.status_code)
+        if r.status_code == 404:
+            return None
+
+        sleep(1200)
+        return get_tree(url)
+
+
     return html.fromstring(page_content)
 
 
 def get_link_details(url):
-
-    r = requests.get(url)
-    page_content = r.text
-    tree = html.fromstring(page_content)
+    tree = get_tree(url)
+    if tree is None:
+        return {}
 
     description = tree.xpath('//div[@class = "b-listing-details"]/p[@class = "m-listing-description"]')[0].text_content().strip()
     address = tree.xpath('//div[@class = "e-listing-address"]/span')[0].text_content().strip()
@@ -71,3 +90,29 @@ def get_link_details(url):
     details['deposit'] = details['deposit'].replace(' ', '')
 
     return details
+
+
+def put_in_db(data: list):
+    conn = connect()
+    cur = conn.cursor()
+
+    for e in data:
+        cur.execute("SELECT id FROM rooms WHERE domofond_id = ?", (e['domofond_id'],))
+        res = cur.fetchall()
+
+        if res:
+            # that id exists in db. updating info
+            values = ", ".join("=".join((k, v)) for k, v in e.items())
+            print(values)
+            # cur.execute("UPDATE rooms SET ")
+
+        else:
+            # insert new record
+            keys_str = ", ".join(e.keys())
+            placeholders = ":" + ", :".join(e.keys())
+
+            cur.execute("INSERT INTO rooms ({}) VALUES ({})".format(keys_str, placeholders), e)
+            conn.commit()
+
+            # cur.execute("UPDATE rooms SET ")
+
