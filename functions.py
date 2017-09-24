@@ -35,7 +35,7 @@ def get_tree(url):
         if r.status_code == 404:
             return None
 
-        sleep(1200)
+        sleep(3600)
         return get_tree(url)
 
 
@@ -97,15 +97,21 @@ def put_in_db(data: list):
     cur = conn.cursor()
 
     for e in data:
+        if not e:
+            continue
+
+        if not 'domofond_id' in e.keys():
+            print(e)
+            continue
+
         cur.execute("SELECT id FROM rooms WHERE domofond_id = ?", (e['domofond_id'],))
         res = cur.fetchall()
 
         if res:
             # that id exists in db. updating info
-            values = ", ".join("=".join((k, v)) for k, v in e.items())
-            print(values)
-            # cur.execute("UPDATE rooms SET ")
-
+            values = ", ".join("=".join((k, "'" + v + "'")) for k, v in e.items())
+            cur.execute("UPDATE rooms SET {} WHERE domofond_id = {}}".format(values, e['domofond_id']))
+            conn.commit()
         else:
             # insert new record
             keys_str = ", ".join(e.keys())
@@ -113,6 +119,3 @@ def put_in_db(data: list):
 
             cur.execute("INSERT INTO rooms ({}) VALUES ({})".format(keys_str, placeholders), e)
             conn.commit()
-
-            # cur.execute("UPDATE rooms SET ")
-

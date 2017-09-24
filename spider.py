@@ -17,12 +17,14 @@ links = proceed_page(tree)
 print('Total pages:', pages_count)
 
 # get links from all other pages
-# for pc in range(2, pages_count + 1):
-#     print('Gathering ', pc, '\r')
-#     current_url = url.format(pc)
-#     current_tree = get_tree(current_url)
-#     current_links = proceed_page(current_tree)
-#     links += current_links
+for pc in range(2, pages_count + 1):
+    print('Gathering ', pc, '\r')
+    current_url = url.format(pc)
+    current_tree = get_tree(current_url)
+    current_links = proceed_page(current_tree)
+    links += current_links
+
+    sleep(60)
 
 links = list(set(links))
 
@@ -36,7 +38,7 @@ for l in links:
 
     c += 1
     # break
-    sleep(10)
+    sleep(60)
 
 
 # print(gathered_info)
