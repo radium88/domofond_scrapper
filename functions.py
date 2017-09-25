@@ -1,20 +1,34 @@
-from lxml import html, etree
+from lxml import html
 import requests
 from time import sleep
 import sqlite3
+import re
 
 s = requests.session()
+
 
 def connect():
     conn = sqlite3.connect("database.db")
     return conn
 
+
 def proceed_page(page_tree):
     links = []
 
+    fake_pages = page_tree.xpath('//div[@id = "resultsPageDiv"]/style')[0]
+    fake_pages = fake_pages.text_content().strip().replace('.', '').split('\r\n')
+    fake_pages = [x.strip() for x in fake_pages]
+    fake_pages = set([x.split('{')[0].strip() for x in fake_pages])
+
     listing_results = page_tree.xpath('//div[@id = "listingResults"]')[0]
     for x in listing_results:
-        # print(etree.tostring(x))
+        page_class = x.get('class')
+        if 'b-dfp-ad' in page_class:
+            continue
+
+        if set(page_class.split(' ')).intersection(fake_pages):
+            continue
+
         href = x.xpath('.//a/@href')
         if href:
             # get link
@@ -23,31 +37,40 @@ def proceed_page(page_tree):
     return links
 
 
-def get_tree(url):
+def get_tree(url, referer):
     global s
-    r = s.get(url, headers={
-        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.91 Safari/537.36'
-    })
-    page_content = r.text
 
-    if r.status_code != 200:
-        print(url, r.status_code)
-        if r.status_code == 404:
-            return None
+    headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.91 Safari/537.36',
+            'Referer': referer
+        }
 
-        sleep(3600)
-        return get_tree(url)
+    retry_counter = 0
+
+    while True:
+        r = s.get(url, headers=headers)
+        page_content = r.text
+
+        if r.status_code == 200:
+            return html.fromstring(page_content)
+        elif r.status_code == 503:
+            print(url, "503, Waiting for 3600 sec")
+
+            sleep(3600)
+        elif r.status_code == 404:
+            if retry_counter > 3:
+                return None
+
+        retry_counter += 1
 
 
-    return html.fromstring(page_content)
-
-
-def get_link_details(url):
-    tree = get_tree(url)
+def get_link_details(url, referer):
+    tree = get_tree(url, referer)
     if tree is None:
         return {}
 
-    description = tree.xpath('//div[@class = "b-listing-details"]/p[@class = "m-listing-description"]')[0].text_content().strip()
+    description = tree.xpath('//div[@class = "b-listing-details"]/p[@class = "m-listing-description"]')[
+        0].text_content().strip()
     address = tree.xpath('//div[@class = "e-listing-address"]/span')[0].text_content().strip()
 
     details = {
@@ -110,7 +133,7 @@ def put_in_db(data: list):
         if res:
             # that id exists in db. updating info
             values = ", ".join("=".join((k, "'" + v + "'")) for k, v in e.items())
-            cur.execute("UPDATE rooms SET {} WHERE domofond_id = {}}".format(values, e['domofond_id']))
+            cur.execute("UPDATE rooms SET {} WHERE domofond_id = '{}'".format(values, e['domofond_id']))
             conn.commit()
         else:
             # insert new record
