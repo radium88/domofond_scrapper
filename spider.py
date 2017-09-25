@@ -28,7 +28,6 @@ for pc in range(2, pages_count + 1):
     current_tree = get_tree(current_url, url.format(1))
     current_links = proceed_page(current_tree)
     current_links = list(set(current_links))
-    # links.append((current_url, current_links))
     links.update({
         current_url: current_links
     })
@@ -48,10 +47,6 @@ for l_url, l_links in links.items():
 
     c += 1
 
-    # if cw > 5:
-    #     sleep(300)
-
-    # break
     sleep(1)
 
 # print(gathered_info)

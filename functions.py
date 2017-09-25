@@ -1,11 +1,10 @@
-from lxml import html
+from lxml import html, etree
 import requests
 from time import sleep
 import sqlite3
-import re
+import geocoder
 
 s = requests.session()
-
 
 def connect():
     conn = sqlite3.connect("database.db")
@@ -142,3 +141,9 @@ def put_in_db(data: list):
 
             cur.execute("INSERT INTO rooms ({}) VALUES ({})".format(keys_str, placeholders), e)
             conn.commit()
+
+
+def get_coords_from_address(address: str):
+    g = geocoder.yandex(address)
+
+    return g.latlng
