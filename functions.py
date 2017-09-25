@@ -3,6 +3,7 @@ import requests
 from time import sleep
 import sqlite3
 import geocoder
+from xml.etree import ElementTree
 
 s = requests.session()
 
@@ -96,7 +97,7 @@ def get_link_details(url, referer):
         'Комфорт': 'comfort',
         'Цена за м²': 'cost_per_meter',
         'Комиссия': 'comission',
-        'Бытовая техника': 'appliances'
+        'Бытовая техника': 'appliances',
     }
 
     details_tmp = {}
@@ -110,6 +111,7 @@ def get_link_details(url, referer):
 
     details['price'] = details['price'].replace(' ', '')
     details['deposit'] = details['deposit'].replace(' ', '')
+    details['link'] = url
 
     return details
 
@@ -147,3 +149,22 @@ def get_coords_from_address(address: str):
     g = geocoder.yandex(address)
 
     return g.latlng
+
+
+def get_route_length(s_coord, t_coord):
+    r = requests.get(
+        "http://www.yournavigation.org/api/dev/route.php?flat={}&flon={}&tlat={}&tlon={}&v=cycleroute&fast=1".format(
+            s_coord[0], s_coord[1], t_coord[0], t_coord[1])
+    )
+
+    if r.status_code != 200:
+        return 0.0
+
+    tree = etree.XML(r.content)
+    el = tree.find('{http://earth.google.com/kml/2.0}Document')
+    for x in el:
+        if x.tag == '{http://earth.google.com/kml/2.0}distance':
+            return x.text
+
+    return 0.0
+
