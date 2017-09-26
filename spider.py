@@ -5,7 +5,8 @@ from time import sleep
 
 conn = connect()
 
-url = "https://www.domofond.ru/arenda-kvartiry-sankt_peterburg-c3414?PriceTo=16000&RentalRate=Month&Rooms=One&Page={}"
+# url = "https://www.domofond.ru/arenda-kvartiry-sankt_peterburg-c3414?PriceTo=16000&RentalRate=Month&Rooms=One&Page={}"
+url = "https://www.domofond.ru/arenda-kvartiry-sankt_peterburg-c3414?PriceTo=20000&RentalRate=Month&Rooms=One,Two&Page={}"
 tree = get_tree(url.format(1), "https://domofond.ru")
 
 # get pages count

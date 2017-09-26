@@ -69,9 +69,18 @@ def get_link_details(url, referer):
     if tree is None:
         return {}
 
-    description = tree.xpath('//div[@class = "b-listing-details"]/p[@class = "m-listing-description"]')[
-        0].text_content().strip()
-    address = tree.xpath('//div[@class = "e-listing-address"]/span')[0].text_content().strip()
+    description = tree.xpath('//div[@class = "b-listing-details"]/p[@class = "m-listing-description"]')
+    if description:
+        description = description[0].text_content().strip()
+    else:
+        description = ""
+
+    address = tree.xpath('//div[@class = "e-listing-address"]/span')
+    if address:
+        address = address[0].text_content().strip()
+    else:
+        # without address entry is useless
+        return {}
 
     details = {
         'description': description,

@@ -16,7 +16,12 @@ for x in res:
     c.execute("SELECT * FROM rooms_coords WHERE room_id = :id", {'id': x[0]})
     r = c.fetchall()
 
-    route_len = get_route_length(coords, [59.947210, 30.255479])
+    if coords:
+        route_len = get_route_length(coords, [59.947210, 30.255479])
+    else:
+        route_len = -1
+
+    print(x, coords, route_len)
 
     if r:
         # update
