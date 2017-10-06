@@ -144,7 +144,7 @@ def put_in_db(data: list):
 
         if res:
             # that id exists in db. updating info
-            values = ", ".join("=".join((k, ":"+k)) for k, v in e.items())
+            values = ", ".join("=".join((k, ":"+k)) for k in e.keys())
 
             cur.execute("UPDATE rooms SET {} WHERE domofond_id = '{}'".format(values, e['domofond_id']), e)
             conn.commit()

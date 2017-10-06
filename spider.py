@@ -25,8 +25,7 @@ links = {}
 print('Total pages:', pages_count)
 
 # get links from all other pages
-# for pc in range(2, pages_count + 1):
-for pc in range(3, 4):
+for pc in range(2, pages_count + 1):
     print('Gathering links', pc, '\r')
     current_url = url.format(pc)
     current_tree = get_tree(current_url, url.format(1))
