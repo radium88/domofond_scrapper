@@ -5,7 +5,7 @@ from functions import connect, get_coords_from_address, get_route_length
 conn = connect()
 cur = conn.cursor()
 
-cur.execute("SELECT id, address FROM rooms")
+cur.execute("SELECT rooms.id, address FROM rooms LEFT JOIN rooms_coords ON rooms_coords.room_id = rooms.id WHERE path_len IS NULL")
 
 res = cur.fetchall()
 
