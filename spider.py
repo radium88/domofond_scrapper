@@ -16,14 +16,17 @@ pages_count = int(pages_container.text_content())
 # get current page links
 # links = proceed_page(tree)
 
-links = {
-    url.format(1): proceed_page(tree)
-}
+links = {}
+
+# links.update({
+#     url.format(1): proceed_page(tree)
+# })
 
 print('Total pages:', pages_count)
 
 # get links from all other pages
-for pc in range(2, pages_count + 1):
+# for pc in range(2, pages_count + 1):
+for pc in range(3, 4):
     print('Gathering links', pc, '\r')
     current_url = url.format(pc)
     current_tree = get_tree(current_url, url.format(1))

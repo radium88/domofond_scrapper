@@ -4,6 +4,7 @@ from time import sleep
 import sqlite3
 import geocoder
 from xml.etree import ElementTree
+from datetime import datetime
 
 s = requests.session()
 
@@ -121,6 +122,7 @@ def get_link_details(url, referer):
     details['price'] = details['price'].replace(' ', '')
     details['deposit'] = details['deposit'].replace(' ', '')
     details['link'] = url
+    details['update_date'] = str(datetime.now())
 
     return details
 
@@ -142,8 +144,9 @@ def put_in_db(data: list):
 
         if res:
             # that id exists in db. updating info
-            values = ", ".join("=".join((k, "'" + v + "'")) for k, v in e.items())
-            cur.execute("UPDATE rooms SET {} WHERE domofond_id = '{}'".format(values, e['domofond_id']))
+            values = ", ".join("=".join((k, ":"+k)) for k, v in e.items())
+
+            cur.execute("UPDATE rooms SET {} WHERE domofond_id = '{}'".format(values, e['domofond_id']), e)
             conn.commit()
         else:
             # insert new record
