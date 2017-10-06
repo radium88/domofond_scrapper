@@ -19,7 +19,9 @@ for x in res:
     if coords:
         route_len = get_route_length(coords, [59.947210, 30.255479])
     else:
-        route_len = -1
+        print("Skipped", x)
+        continue
+        # route_len = -1
 
     print(x, coords, route_len)
 
