@@ -2,6 +2,7 @@
 
 from functions import proceed_page, get_tree, get_link_details, put_in_db, connect
 from time import sleep
+from update_coords import update_gps_routelen
 
 conn = connect()
 
@@ -42,7 +43,7 @@ gathered_info = []
 c = 1
 cw = 0
 for l_url, l_links in links.items():
-    print(c, '|', len(l_links), l_links)
+    print("{}/{}, {}".format(c, len(links), len(l_links)))
     # print(l_url, l_links)
     for l in l_links:
         details = get_link_details("https://www.domofond.ru" + l, l_url)
@@ -54,3 +55,4 @@ for l_url, l_links in links.items():
 
 # print(gathered_info)
 put_in_db(gathered_info)
+update_gps_routelen()
