@@ -46,12 +46,15 @@ for l_url, l_links in links.items():
     print("{}/{}, {}".format(c, len(links), len(l_links)))
     # print(l_url, l_links)
     for l in l_links:
-        details = get_link_details("https://www.domofond.ru" + l, l_url)
-        gathered_info.append(details)
+        try:
+            details = get_link_details("https://www.domofond.ru" + l, l_url)
+            gathered_info.append(details)
+        except Exception as e:
+            print(e)
 
     c += 1
 
-    sleep(1)
+    sleep(0.5)
 
 # print(gathered_info)
 put_in_db(gathered_info)
