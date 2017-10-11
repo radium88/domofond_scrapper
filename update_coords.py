@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from functions import connect, get_coords_from_address, get_route_length
-
+from time import sleep
 
 def update_gps_routelen():
     conn = connect()
@@ -45,6 +45,7 @@ def update_gps_routelen():
                 'len': route_len
             })
             conn.commit()
+    sleep(1)
 
 
 if __name__ == '__main__':
