@@ -59,3 +59,4 @@ for l_url, l_links in links.items():
 # print(gathered_info)
 put_in_db(gathered_info)
 update_gps_routelen()
+

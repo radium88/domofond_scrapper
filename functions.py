@@ -180,3 +180,6 @@ def get_route_length(s_coord, t_coord):
 
     return 0.0
 
+
+def check_alive_links():
+    pass
