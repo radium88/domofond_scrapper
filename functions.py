@@ -7,6 +7,8 @@ from xml.etree import ElementTree
 from datetime import datetime
 
 s = requests.session()
+cookies = {}
+
 
 def connect():
     conn = sqlite3.connect("database.db")
@@ -39,6 +41,8 @@ def proceed_page(page_tree):
 
 
 def get_tree(url, referer):
+    print('gettree called')
+
     global s
 
     headers = {
@@ -49,8 +53,11 @@ def get_tree(url, referer):
     retry_counter = 0
 
     while True:
-        r = s.get(url, headers=headers)
+        # cookies = s.cookies
+        r = s.get(url, headers=headers, cookies=s.cookies)
         page_content = r.text
+
+        # print(r.text)
 
         if r.status_code == 200:
             return html.fromstring(page_content)
@@ -69,6 +76,8 @@ def get_link_details(url, referer):
     tree = get_tree(url, referer)
     if tree is None:
         return {}
+
+    print(tree)
 
     description = tree.xpath('//div[@class = "b-listing-details"]/p[@class = "m-listing-description"]')
     if description:

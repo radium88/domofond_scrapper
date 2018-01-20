@@ -6,8 +6,8 @@ from update_coords import update_gps_routelen
 
 conn = connect()
 
-# url = "https://www.domofond.ru/arenda-kvartiry-sankt_peterburg-c3414?PriceTo=16000&RentalRate=Month&Rooms=One&Page={}"
-url = "https://www.domofond.ru/arenda-kvartiry-sankt_peterburg-c3414?PriceTo=20000&RentalRate=Month&Rooms=One,Two&Page={}"
+url = "https://www.domofond.ru/arenda-odnokomnatnyh-kvartir-sankt_peterburg-c3414?PriceTo=16000&RentalRate=Month&Page={}"
+# url = "https://www.domofond.ru/arenda-kvartiry-sankt_peterburg-c3414?PriceTo=20000&RentalRate=Month&Rooms=One,Two&Page={}"
 tree = get_tree(url.format(1), "https://domofond.ru")
 
 # get pages count
@@ -26,7 +26,7 @@ links = {}
 print('Total pages:', pages_count)
 
 # get links from all other pages
-for pc in range(2, pages_count + 1):
+for pc in range(1, pages_count + 1):
     print('Gathering links', pc, '\r')
     current_url = url.format(pc)
     current_tree = get_tree(current_url, url.format(1))
@@ -36,7 +36,8 @@ for pc in range(2, pages_count + 1):
         current_url: current_links
     })
 
-    sleep(1)
+    # sleep(1)
+    break
 
 gathered_info = []
 
@@ -47,16 +48,23 @@ for l_url, l_links in links.items():
     # print(l_url, l_links)
     for l in l_links:
         try:
+            print(l, l_url)
             details = get_link_details("https://www.domofond.ru" + l, l_url)
+            print(details)
+
+
             gathered_info.append(details)
         except Exception as e:
             print(e)
 
+        break
+
     c += 1
 
-    sleep(0.5)
+    # sleep(0.5)
+    break
 
-# print(gathered_info)
-put_in_db(gathered_info)
-update_gps_routelen()
+print(gathered_info)
+# put_in_db(gathered_info)
+# update_gps_routelen()
 
