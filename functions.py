@@ -41,7 +41,7 @@ def proceed_page(page_tree):
 
 
 def get_tree(url, referer):
-    print('gettree called')
+    # print('gettree called')
 
     global s
 
@@ -77,15 +77,15 @@ def get_link_details(url, referer):
     if tree is None:
         return {}
 
-    print(tree)
+    description = tree.xpath('//div[@class = "b-listing-details"]/div[contains(@class, "e-listing-description")]')
 
-    description = tree.xpath('//div[@class = "b-listing-details"]/p[@class = "m-listing-description"]')
     if description:
         description = description[0].text_content().strip()
     else:
         description = ""
 
-    address = tree.xpath('//div[@class = "e-listing-address"]/span')
+    address = tree.xpath('//a[@class = "e-listing-address-line"]')
+
     if address:
         address = address[0].text_content().strip()
     else:
