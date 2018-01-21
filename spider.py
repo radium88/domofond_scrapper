@@ -37,7 +37,7 @@ for pc in range(1, pages_count + 1):
     })
 
     # sleep(1)
-    break
+    # break
 
 gathered_info = []
 
@@ -48,23 +48,23 @@ for l_url, l_links in links.items():
     # print(l_url, l_links)
     for l in l_links:
         try:
-            print(l, l_url)
+            # print(l, l_url)
             details = get_link_details("https://www.domofond.ru" + l, l_url)
-            print(details)
+            # print(details)
 
 
             gathered_info.append(details)
         except Exception as e:
             print(e)
 
-        break
+        # break
 
     c += 1
 
     # sleep(0.5)
-    break
+    # break
 
-print(gathered_info)
-# put_in_db(gathered_info)
+# print(gathered_info)
+put_in_db(gathered_info)
 # update_gps_routelen()
 
