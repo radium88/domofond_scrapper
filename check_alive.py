@@ -16,7 +16,10 @@ conn = connect()
 cur = conn.cursor()
 
 query = "SELECT id, link FROM rooms WHERE alive = 1 AND link != '' AND update_date < ?"
-cur.execute(query, (datetime.now() - timedelta(days=1), ))
+cur.execute(query, (datetime.now() - timedelta(hours=12), ))
+
+# query = "SELECT id, link FROM rooms WHERE alive = 1 AND link != ''"
+# cur.execute(query)
 res = cur.fetchall()
 
 if not res:

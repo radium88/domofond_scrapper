@@ -140,6 +140,9 @@ def put_in_db(data: list):
     conn = connect()
     cur = conn.cursor()
 
+    ins_cnt = 0
+    upd_cnt = 0
+
     for e in data:
         if not e:
             continue
@@ -157,6 +160,8 @@ def put_in_db(data: list):
 
             cur.execute("UPDATE rooms SET {} WHERE domofond_id = '{}'".format(values, e['domofond_id']), e)
             conn.commit()
+
+            upd_cnt += 1
         else:
             # insert new record
             keys_str = ", ".join(e.keys())
@@ -164,6 +169,10 @@ def put_in_db(data: list):
 
             cur.execute("INSERT INTO rooms ({}) VALUES ({})".format(keys_str, placeholders), e)
             conn.commit()
+
+            ins_cnt += 1
+
+    print("Processed {}, I:{}, U:{}", upd_cnt + ins_cnt, ins_cnt, upd_cnt)
 
 
 def get_coords_from_address(address: str):

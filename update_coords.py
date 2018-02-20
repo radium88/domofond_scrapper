@@ -7,7 +7,7 @@ def update_gps_routelen():
     conn = connect()
     cur = conn.cursor()
 
-    cur.execute("SELECT rooms.id, address FROM rooms LEFT JOIN rooms_coords ON rooms_coords.room_id = rooms.id WHERE path_len IS NULL")
+    cur.execute("SELECT rooms.id, address FROM rooms LEFT JOIN rooms_coords ON rooms_coords.room_id = rooms.id WHERE path_len IS NULL AND alive = 1")
 
     res = cur.fetchall()
 

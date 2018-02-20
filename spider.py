@@ -6,7 +6,7 @@ from update_coords import update_gps_routelen
 
 conn = connect()
 
-url = "https://www.domofond.ru/arenda-odnokomnatnyh-kvartir-sankt_peterburg-c3414?PriceTo=16000&RentalRate=Month&Page={}"
+url = "https://www.domofond.ru/arenda-odnokomnatnyh-kvartir-sankt_peterburg-c3414?PriceTo=18000&RentalRate=Month&Page={}"
 # url = "https://www.domofond.ru/arenda-kvartiry-sankt_peterburg-c3414?PriceTo=20000&RentalRate=Month&Rooms=One,Two&Page={}"
 tree = get_tree(url.format(1), "https://domofond.ru")
 
@@ -52,7 +52,6 @@ for l_url, l_links in links.items():
             details = get_link_details("https://www.domofond.ru" + l, l_url)
             # print(details)
 
-
             gathered_info.append(details)
         except Exception as e:
             print(e)
@@ -64,7 +63,7 @@ for l_url, l_links in links.items():
     # sleep(0.5)
     # break
 
-# print(gathered_info)
+print(gathered_info)
 put_in_db(gathered_info)
 # update_gps_routelen()
 
