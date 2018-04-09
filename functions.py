@@ -72,6 +72,27 @@ def get_tree(url, referer):
         retry_counter += 1
 
 
+replace_keys = {
+        'Номер в каталоге': 'domofond_id',
+        'Этаж': 'floor',
+        'Комнаты': 'rooms',
+        'Дополнительно': 'additional_info',
+        'Площадь кухни (м²)': 'kitchen_space',
+        'Жилая площадь (м²)': 'live_space',
+        'Площадь': 'total_space',
+        'Дата публикации объявления': 'publish_date',
+        'Дата обновления объявления': 'refresh_date',
+        'Тип': 'type',
+        'Залог': 'deposit',
+        'Цена': 'price',
+        'Материал здания': 'building_material',
+        'Комфорт': 'comfort',
+        'Цена за м²': 'cost_per_meter',
+        'Комиссия': 'comission',
+        'Бытовая техника': 'appliances',
+    }
+
+
 def get_link_details(url, referer):
     tree = get_tree(url, referer)
     if tree is None:
@@ -99,32 +120,12 @@ def get_link_details(url, referer):
 
     table = tree.xpath('//div[@class = "b-details-table"]/div[@class = "e-table-column"]/ul/li')
 
-    replace_keys = {
-        'Номер в каталоге': 'domofond_id',
-        'Этаж': 'floor',
-        'Комнаты': 'rooms',
-        'Дополнительно': 'additional_info',
-        'Площадь кухни (м²)': 'kitchen_space',
-        'Жилая площадь (м²)': 'live_space',
-        'Площадь': 'total_space',
-        'Дата публикации объявления': 'publish_date',
-        'Дата обновления объявления': 'refresh_date',
-        'Тип': 'type',
-        'Залог': 'deposit',
-        'Цена': 'price',
-        'Материал здания': 'building_material',
-        'Комфорт': 'comfort',
-        'Цена за м²': 'cost_per_meter',
-        'Комиссия': 'comission',
-        'Бытовая техника': 'appliances',
-    }
-
     details_tmp = {}
 
     for t in table:
-        list = t.text_content().strip().replace('\r\n', '').replace('\xa0', ' ').split(':')
-        if len(list) > 1:
-            details_tmp[list[0]] = list[1].replace('РУБ.', '').replace('м²', '').strip()
+        t_list = t.text_content().strip().replace('\r\n', '').replace('\xa0', ' ').split(':')
+        if len(t_list) > 1:
+            details_tmp[t_list[0]] = t_list[1].replace('РУБ.', '').replace('м²', '').strip()
 
     details.update({replace_keys[k]: v for k, v in details_tmp.items() if k in replace_keys})
 
@@ -172,7 +173,7 @@ def put_in_db(data: list):
 
             ins_cnt += 1
 
-    print("Processed {}, I:{}, U:{}", upd_cnt + ins_cnt, ins_cnt, upd_cnt)
+    print("Processed {}, I:{}, U:{}".format(upd_cnt + ins_cnt, ins_cnt, upd_cnt))
 
 
 def get_coords_from_address(address: str):
