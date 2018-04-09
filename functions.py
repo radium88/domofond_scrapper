@@ -5,6 +5,7 @@ import sqlite3
 import geocoder
 from xml.etree import ElementTree
 from datetime import datetime
+from random import random
 
 s = requests.session()
 cookies = {}
@@ -74,6 +75,10 @@ def get_entries_links(url):
 def get_tree(url, referer, sleep_delay=0.5):
     global s
 
+    sleep_delay = random.uniform(sleep_delay - (sleep_delay * 0.25), sleep_delay + (sleep_delay * 0.25)) \
+        if sleep_delay else 0
+
+
     headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.91 Safari/537.36',
             'Referer': referer
@@ -89,7 +94,8 @@ def get_tree(url, referer, sleep_delay=0.5):
         # print(r.text)
 
         if r.status_code == 200:
-            sleep(sleep_delay)
+            if sleep_delay > 0:
+                sleep(sleep_delay)
 
             return html.fromstring(page_content)
         elif r.status_code == 503:
@@ -107,6 +113,9 @@ def get_link_details(url, referer, sleep_delay=0.5):
     tree = get_tree(url, referer)
     if tree is None:
         return {}
+
+    sleep_delay = random.uniform(sleep_delay - (sleep_delay * 0.25), sleep_delay + (sleep_delay * 0.25)) \
+        if sleep_delay else 0
 
     description = tree.xpath('//div[@class = "b-listing-details"]/div[contains(@class, "e-listing-description")]')
 
@@ -143,6 +152,9 @@ def get_link_details(url, referer, sleep_delay=0.5):
     details['deposit'] = details['deposit'].replace(' ', '')
     details['link'] = url
     details['update_date'] = str(datetime.now())
+
+    if sleep_delay > 0:
+        sleep(sleep_delay)
 
     return details
 

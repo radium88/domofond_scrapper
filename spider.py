@@ -3,6 +3,8 @@
 import lxml
 import multiprocessing.dummy as dmp
 
+from datetime import datetime
+
 from functions import get_entries_links, get_tree, get_link_details, put_in_db
 
 url = "https://www.domofond.ru/arenda-odnokomnatnyh-kvartir-sankt_peterburg-c3414" \
@@ -76,13 +78,24 @@ if __name__ == '__main__':
 
     pool = dmp.Pool()
 
+    # measuring gathering time
+    _now = datetime.now()
+
+    # gathering links
+    entries_links = []
+    counter = 1
+
     # will get list of lists, set of entries per page
-    entries_links = pool.map(get_entries_links, pages_links)
+    for i in pool.imap(get_entries_links, pages_links):
+        print(f'Gathering links for page {counter} of {pages_count}, {counter / pages_count * 100:.2f}%')
+        entries_links.append(i)
+        counter += 1
 
     # making flat list of entries list
     entries_links = [y for x in entries_links for y in x]
 
-    print(len(entries_links))
+    print(f'Gathered {len(entries_links)} links at {datetime.now() - _now}')
+
 
     # get current page links
     # links = get_entries_links(tree)
