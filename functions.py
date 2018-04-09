@@ -160,6 +160,31 @@ def get_link_details(url, referer, sleep_delay=0.5):
 
     return details
 
+db_fields = [
+    'id',
+    'domofond_id',
+    'floor',
+    'additional_info',
+    'kitchen_space',
+    'live_space',
+    'total_space',
+    'publish_date',
+    'refresh_date',
+    'type',
+    'deposit',
+    'price',
+    'building_material',
+    'comfort',
+    'cost_per_meter',
+    'comission',
+    'appliances',
+    'description',
+    'address',
+    'rooms',
+    'link',
+    'update_date',
+    'alive'
+]
 
 def put_in_db(data: list):
     conn = connect()
@@ -176,17 +201,44 @@ def put_in_db(data: list):
             print(e)
             continue
 
-        cur.execute("SELECT id FROM rooms WHERE domofond_id = ?", (e['domofond_id'],))
-        res = cur.fetchall()
+        cur.execute("SELECT * FROM rooms WHERE domofond_id = ?", (e['domofond_id'],))
+        res = cur.fetchone()
 
         if res:
+            # performing diff between already stored record and newly crawled
+            oldrec = res
+
             # that id exists in db. updating info
             values = ", ".join("=".join((k, ":"+k)) for k in e.keys())
 
             cur.execute("UPDATE rooms SET {} WHERE domofond_id = '{}'".format(values, e['domofond_id']), e)
             conn.commit()
-
             upd_cnt += 1
+
+            cur.execute("SELECT * FROM rooms WHERE domofond_id = ?", (e['domofond_id'],))
+            newres = cur.fetchone()
+
+            if res != newres:
+                # 0 - id
+                # 1 - domofond if
+                # relevant data starts from 2
+                diff_query = "INSERT INTO rooms_diff (room_id, scrap_date, domofond_id, {}) VALUES ({id})".format(
+                    {
+                        'id': res[0],
+                        'scrap_date': ''
+                    }
+                )
+                for i in range(2, len(res) - 1):
+                    if res[i] != newres[i]:
+                        change = f'{res[i] -> newres[i]}'
+                        query_part = f"{db_fields[i]} = '{change}'"
+
+
+
+                    
+                    
+
+
         else:
             # insert new record
             keys_str = ", ".join(e.keys())
