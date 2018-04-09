@@ -9,8 +9,7 @@ import random
 
 random.seed()
 
-s = requests.session()
-cookies = {}
+s = requests.Session()
 
 replace_keys = {
         'Номер в каталоге': 'domofond_id',
@@ -38,8 +37,8 @@ def connect():
     return conn
 
 
-def get_entries_links(url):
-    page_tree = get_tree(url.format(1), "https://domofond.ru")
+def get_entries_links(url, referer='https://domofond.ru'):
+    page_tree = get_tree(url.format(1), referer)
 
     if page_tree is None:
         print('WARN: Empty tree!')
@@ -48,7 +47,6 @@ def get_entries_links(url):
     links = []
 
     try:
-
         fake_pages = page_tree.xpath('//div[@id = "resultsPageDiv"]/style')[0]
         fake_pages = fake_pages.text_content().strip().replace('.', '').split('\r\n')
         fake_pages = [x.strip() for x in fake_pages]
@@ -71,7 +69,7 @@ def get_entries_links(url):
         print(e)
         print(etree.tostring(page_tree))
 
-    return links
+    return url, links
 
 
 def get_tree(url, referer, sleep_delay=0.5):
@@ -93,7 +91,7 @@ def get_tree(url, referer, sleep_delay=0.5):
         r = s.get(url, headers=headers, cookies=s.cookies)
         page_content = r.text
 
-        # print(r.text)
+        print(r.text)
 
         if r.status_code == 200:
             if sleep_delay > 0:
@@ -114,6 +112,7 @@ def get_tree(url, referer, sleep_delay=0.5):
 def get_link_details(url, referer, sleep_delay=0.5):
     tree = get_tree(url, referer)
     if tree is None:
+        print('WARN: Empty tree!')
         return {}
 
     sleep_delay = random.uniform(sleep_delay - (sleep_delay * 0.25), sleep_delay + (sleep_delay * 0.25)) \

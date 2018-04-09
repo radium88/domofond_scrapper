@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.6
 
 import lxml
+import sys
 import multiprocessing.dummy as dmp
 
 from datetime import datetime
@@ -66,6 +67,10 @@ def get_pages_count(url):
 # # update_gps_routelen()
 
 
+def _gld_wrapper(params):
+    return get_link_details(*params)
+
+
 if __name__ == '__main__':
     # tree = get_tree(url.format(1), "https://domofond.ru")
 
@@ -74,27 +79,37 @@ if __name__ == '__main__':
 
     pages_links = [url.format(x) for x in range(1, pages_count + 1)]
 
-    # print(get_entries_links(pages_links[0]))
-
     pool = dmp.Pool()
 
     # measuring gathering time
     _now = datetime.now()
 
     # gathering links
-    entries_links = []
+    entries_links = {}
     counter = 1
+
+    link_prefix = 'https://domofond.ru'
 
     # will get list of lists, set of entries per page
     for i in pool.imap(get_entries_links, pages_links):
         print(f'\rGathering links for page {counter} of {pages_count}, {counter / pages_count * 100:.2f}%', end='')
-        entries_links.append(i)
+        entries_links[i[0]] = [link_prefix + x for x in i[1]]
         counter += 1
 
-    # making flat list of entries list
-    entries_links = [y for x in entries_links for y in x]
+    links_count = len([y for x in entries_links.values() for y in x])
+    print(f'\nGathered {links_count} links in {(datetime.now() - _now)} sec')
 
-    print(f'\nGathered {len(entries_links)} links in {(datetime.now() - _now)} sec')
+    # gathering entries full info
+
+    for k, v in entries_links.items():
+        print(k, v[0])
+        print(_gld_wrapper((v[0], k)))
+        break
+
+
+    # counter = 1
+    # gathered_info = []
+    # for i in pool.imap(get_link_details, entries_links, )
 
 
     # get current page links
