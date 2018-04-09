@@ -9,69 +9,6 @@ from datetime import datetime
 s = requests.session()
 cookies = {}
 
-
-def connect():
-    conn = sqlite3.connect("database.db")
-    return conn
-
-
-def proceed_page(page_tree):
-    links = []
-
-    fake_pages = page_tree.xpath('//div[@id = "resultsPageDiv"]/style')[0]
-    fake_pages = fake_pages.text_content().strip().replace('.', '').split('\r\n')
-    fake_pages = [x.strip() for x in fake_pages]
-    fake_pages = set([x.split('{')[0].strip() for x in fake_pages])
-
-    listing_results = page_tree.xpath('//div[@id = "listingResults"]')[0]
-    for x in listing_results:
-        page_class = x.get('class')
-        if 'b-dfp-ad' in page_class:
-            continue
-
-        if set(page_class.split(' ')).intersection(fake_pages):
-            continue
-
-        href = x.xpath('.//a/@href')
-        if href:
-            # get link
-            links.append(href[0])
-
-    return links
-
-
-def get_tree(url, referer):
-    # print('gettree called')
-
-    global s
-
-    headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.91 Safari/537.36',
-            'Referer': referer
-        }
-
-    retry_counter = 0
-
-    while True:
-        # cookies = s.cookies
-        r = s.get(url, headers=headers, cookies=s.cookies)
-        page_content = r.text
-
-        # print(r.text)
-
-        if r.status_code == 200:
-            return html.fromstring(page_content)
-        elif r.status_code == 503:
-            print(url, "503, Waiting for 3600 sec")
-
-            sleep(3600)
-        elif r.status_code == 404:
-            if retry_counter > 3:
-                return None
-
-        retry_counter += 1
-
-
 replace_keys = {
         'Номер в каталоге': 'domofond_id',
         'Этаж': 'floor',
@@ -93,7 +30,80 @@ replace_keys = {
     }
 
 
-def get_link_details(url, referer):
+def connect():
+    conn = sqlite3.connect("database.db")
+    return conn
+
+
+def get_entries_links(url):
+    page_tree = get_tree(url.format(1), "https://domofond.ru")
+
+    if page_tree is None:
+        print('WARN: Empty tree!')
+        return []
+
+    links = []
+
+    try:
+
+        fake_pages = page_tree.xpath('//div[@id = "resultsPageDiv"]/style')[0]
+        fake_pages = fake_pages.text_content().strip().replace('.', '').split('\r\n')
+        fake_pages = [x.strip() for x in fake_pages]
+        fake_pages = set([x.split('{')[0].strip() for x in fake_pages])
+
+        listing_results = page_tree.xpath('//div[@id = "listingResults"]')[0]
+        for x in listing_results:
+            page_class = x.get('class')
+            if 'b-dfp-ad' in page_class:
+                continue
+
+            if set(page_class.split(' ')).intersection(fake_pages):
+                continue
+
+            href = x.xpath('.//a/@href')
+            if href and 'javascript' not in href[0]:
+                # get link
+                links.append(href[0])
+    except IndexError as e:
+        print(e)
+        print(etree.tostring(page_tree))
+
+    return links
+
+
+def get_tree(url, referer, sleep_delay=0.5):
+    global s
+
+    headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.91 Safari/537.36',
+            'Referer': referer
+        }
+
+    retry_counter = 0
+
+    while True:
+        # cookies = s.cookies
+        r = s.get(url, headers=headers, cookies=s.cookies)
+        page_content = r.text
+
+        # print(r.text)
+
+        if r.status_code == 200:
+            sleep(sleep_delay)
+
+            return html.fromstring(page_content)
+        elif r.status_code == 503:
+            print(url, "503, Waiting for 3600 sec")
+
+            sleep(3600)
+        elif r.status_code == 404:
+            if retry_counter > 3:
+                return None
+
+        retry_counter += 1
+
+
+def get_link_details(url, referer, sleep_delay=0.5):
     tree = get_tree(url, referer)
     if tree is None:
         return {}

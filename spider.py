@@ -1,69 +1,90 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python3.6
 
-from functions import proceed_page, get_tree, get_link_details, put_in_db, connect
-from time import sleep
-from update_coords import update_gps_routelen
+import lxml
+import multiprocessing.dummy as dmp
 
-conn = connect()
+from functions import get_entries_links, get_tree, get_link_details, put_in_db
 
-url = "https://www.domofond.ru/arenda-odnokomnatnyh-kvartir-sankt_peterburg-c3414?PriceTo=18000&RentalRate=Month&Page={}"
-# url = "https://www.domofond.ru/arenda-kvartiry-sankt_peterburg-c3414?PriceTo=20000&RentalRate=Month&Rooms=One,Two&Page={}"
-tree = get_tree(url.format(1), "https://domofond.ru")
+url = "https://www.domofond.ru/arenda-odnokomnatnyh-kvartir-sankt_peterburg-c3414" \
+      "?PriceTo=20000&RentalRate=Month&Page={}"
 
-# get pages count
-pages_container = tree.xpath('//div[@class = "b-pager"]/ul/li[last()]')[0]
-pages_count = int(pages_container.text_content())
 
-# get current page links
-# links = proceed_page(tree)
+def get_pages_count(url):
+    tree = get_tree(url.format(1), "https://domofond.ru")
 
-links = {}
+    # get total pages count
+    pages_container = tree.xpath('//div[@class = "b-pager"]/ul/li[last()]')[0]
+    return int(pages_container.text_content())
 
-# links.update({
-#     url.format(1): proceed_page(tree)
-# })
+#
+# links = {}
+#
+# print('Total pages:', pages_count)
+#
+# # get links from all other pages
+# for pc in range(1, pages_count + 1):
+#     print('Gathering links', pc, '\r')
+#     current_url = url.format(pc)
+#     current_tree = get_tree(current_url, url.format(1))
+#     current_links = proceed_page(current_tree)
+#     current_links = list(set(current_links))
+#     links.update({
+#         current_url: current_links
+#     })
+#
+#     # sleep(1)
+#     # break
+#
+# gathered_info = []
+#
+# c = 1
+# cw = 0
+# for l_url, l_links in links.items():
+#     print("{}/{}, {}".format(c, len(links), len(l_links)))
+#     # print(l_url, l_links)
+#     for l in l_links:
+#         try:
+#             # print(l, l_url)
+#             details = get_link_details("https://www.domofond.ru" + l, l_url)
+#             # print(details)
+#
+#             gathered_info.append(details)
+#         except Exception as e:
+#             print(e)
+#
+#         break
+#
+#     c += 1
+#
+#     # sleep(0.5)
+#     # break
+#
+# print(gathered_info)
+# # put_in_db(gathered_info)
+# # update_gps_routelen()
 
-print('Total pages:', pages_count)
 
-# get links from all other pages
-for pc in range(1, pages_count + 1):
-    print('Gathering links', pc, '\r')
-    current_url = url.format(pc)
-    current_tree = get_tree(current_url, url.format(1))
-    current_links = proceed_page(current_tree)
-    current_links = list(set(current_links))
-    links.update({
-        current_url: current_links
-    })
+if __name__ == '__main__':
+    # tree = get_tree(url.format(1), "https://domofond.ru")
 
-    # sleep(1)
-    # break
+    pages_count = get_pages_count(url)
+    print(f'Pages count: {pages_count}')
 
-gathered_info = []
+    pages_links = [url.format(x) for x in range(1, pages_count + 1)]
 
-c = 1
-cw = 0
-for l_url, l_links in links.items():
-    print("{}/{}, {}".format(c, len(links), len(l_links)))
-    # print(l_url, l_links)
-    for l in l_links:
-        try:
-            # print(l, l_url)
-            details = get_link_details("https://www.domofond.ru" + l, l_url)
-            # print(details)
+    # print(get_entries_links(pages_links[0]))
 
-            gathered_info.append(details)
-        except Exception as e:
-            print(e)
+    pool = dmp.Pool()
 
-        # break
+    # will get list of lists, set of entries per page
+    entries_links = pool.map(get_entries_links, pages_links)
 
-    c += 1
+    # making flat list of entries list
+    entries_links = [y for x in entries_links for y in x]
 
-    # sleep(0.5)
-    # break
+    print(len(entries_links))
 
-print(gathered_info)
-put_in_db(gathered_info)
-# update_gps_routelen()
+    # get current page links
+    # links = get_entries_links(tree)
 
+    # print(links)
