@@ -5,7 +5,9 @@ import sqlite3
 import geocoder
 from xml.etree import ElementTree
 from datetime import datetime
-from random import random
+import random
+
+random.seed()
 
 s = requests.session()
 cookies = {}

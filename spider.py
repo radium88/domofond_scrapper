@@ -87,14 +87,14 @@ if __name__ == '__main__':
 
     # will get list of lists, set of entries per page
     for i in pool.imap(get_entries_links, pages_links):
-        print(f'Gathering links for page {counter} of {pages_count}, {counter / pages_count * 100:.2f}%')
+        print(f'\rGathering links for page {counter} of {pages_count}, {counter / pages_count * 100:.2f}%', end='')
         entries_links.append(i)
         counter += 1
 
     # making flat list of entries list
     entries_links = [y for x in entries_links for y in x]
 
-    print(f'Gathered {len(entries_links)} links at {datetime.now() - _now}')
+    print(f'\nGathered {len(entries_links)} links in {(datetime.now() - _now)} sec')
 
 
     # get current page links
