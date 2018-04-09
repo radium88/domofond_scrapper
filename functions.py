@@ -80,7 +80,8 @@ def get_tree(url, referer, sleep_delay=0.5):
 
 
     headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/61.0.3163.91 Safari/537.36',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko)'
+                          ' Chrome/61.0.3163.91 Safari/537.36',
             'Referer': referer
         }
 
@@ -91,7 +92,7 @@ def get_tree(url, referer, sleep_delay=0.5):
         r = s.get(url, headers=headers, cookies=s.cookies)
         page_content = r.text
 
-        print(r.text)
+        # print(r.text)
 
         if r.status_code == 200:
             if sleep_delay > 0:

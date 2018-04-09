@@ -88,7 +88,7 @@ if __name__ == '__main__':
     entries_links = {}
     counter = 1
 
-    link_prefix = 'https://domofond.ru'
+    link_prefix = 'https://www.domofond.ru'
 
     # will get list of lists, set of entries per page
     for i in pool.imap(get_entries_links, pages_links):
@@ -100,19 +100,19 @@ if __name__ == '__main__':
     print(f'\nGathered {links_count} links in {(datetime.now() - _now)} sec')
 
     # gathering entries full info
+    sleep_delay = 0.25
 
+    counter = 1
+    pages_counter = 1
+    gathered_info = []
     for k, v in entries_links.items():
-        print(k, v[0])
-        print(_gld_wrapper((v[0], k)))
-        break
+        print(f'Processing page {pages_counter}/{pages_count}')
 
+        iter_data = [(l, k, sleep_delay) for l in v]
+        for i in pool.imap(_gld_wrapper, iter_data):
+            print(f'Processing entry {counter}/{links_count}, {counter / links_count * 100:.2f}%')
+            gathered_info.append(i)
+            counter += 1
+        pages_counter += 1
 
-    # counter = 1
-    # gathered_info = []
-    # for i in pool.imap(get_link_details, entries_links, )
-
-
-    # get current page links
-    # links = get_entries_links(tree)
-
-    # print(links)
+    print(gathered_info)
